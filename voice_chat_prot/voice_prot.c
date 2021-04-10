@@ -34,7 +34,7 @@ int send_( int sock, uint8_t * buffer, struct sockaddr * client_addr ) {
     int stat = sendto( sock, buffer, sizeof( buffer ), 0, client_addr, sizeof( *client_addr ));
 
     if ( stat == -1 ) {
-        exit(ERR_SEND);
+        exit( ERR_SEND );
     }
 
     return stat;
@@ -56,11 +56,11 @@ int recv_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr )
 
 int send_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr ) {
     uint8_t buffer[DATAGRAM_LEN] = { 0 };
-    memcpy(buffer, &datagram->order, sizeof(uint32_t));
-    memset(&buffer[UID_INT8_PTR_INDEX], 0, sizeof(uint32_t));
-    memcpy(&buffer[SAMPLES_INT8_PTR_INDEX], &datagram->samples, DATAGRAM_SAMPLE_C * 2);
+    memcpy( buffer, &datagram->order, sizeof( uint32_t ));
+    memset( &buffer[ UID_INT8_PTR_INDEX ], 0, sizeof( uint32_t ));
+    memcpy( &buffer[ SAMPLES_INT8_PTR_INDEX ], &datagram->samples, DATAGRAM_SAMPLE_C * 2 );
 
-    int stat = send_(sock, buffer, client_addr);
+    int stat = send_( sock, buffer, client_addr );
 
     return stat;
 }
@@ -75,9 +75,9 @@ int get_voice_sock() {
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons( UDP_VOICE_PORT );
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY); // Default IP address
-    int s;
+    int s = socket( PF_INET, SOCK_DGRAM, 0 );
     // Create socket
-    if (( s = socket( PF_INET, SOCK_DGRAM, 0 ) < 0 )) {
+    if ( s < 0 ) {
         perror( "Error: socket failed!" );
         exit( ERR_OPENING_PORT );
     }
