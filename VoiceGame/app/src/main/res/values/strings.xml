@@ -3,5 +3,229 @@
     <string name="app_info">Test App</string>
     <string name="start_recording">start recording</string>
     <string name="stop_recording">stop recording</string>
-    <string name="TTT">ttt game</string>
+    <string name="TTT">TTT Game</string>
+    <string name="RPS">RPS Game</string>
+    <string name="TTT_webview">
+        &lt;!DOCTYPE html&gt;
+            &lt;meta name=\'viewport\' content=\"width=device-width, initial-scale=1.0\"/&gt;
+            &lt;html&gt;
+             &lt;head&gt;
+                &lt;title&gt;Title of the document&lt;/title&gt;
+             &lt;/head&gt;
+             &lt;body&gt;
+                &lt;p id=\"status\" style=\"font-size:40px;text-align:center\"&gt;wait for game to start&lt;/p&gt;
+                &lt;div id=\"mainDiv\" style=\"margin:45% auto;text-align: center\"&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt;&lt;br/&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt;&lt;br/&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt;&lt;br/&gt;
+
+                    &lt;button id=\"quit\" onclick=quit()&gt;quit game &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;script&gt;
+                    let turn = false;
+                    function updateStatus(status){
+                        document.getElementById(\"status\").innerHTML = status;
+                    }
+
+                    function createGame(){
+                        let mainDiv = document.getElementById(\"mainDiv\");
+                        mainDiv.style.display = \"none\";
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"createGame\"]();
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                    window.onload = createGame();
+
+                    function initializeGame(isTurn){
+                        let mainDiv = document.getElementById(\"mainDiv\");
+                        mainDiv.style.display = \"block\";
+                        if(isTurn === \"true\")
+                            turn = true;
+                    }
+
+                    function pressed(id){
+                        let value = document.getElementById(id).innerHTML;
+                        if(value !== \" \") return;
+                        if(!turn) return;
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"makeMove\"](id);
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                    function quit(){
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"handleGameQuitChoice\"](1);
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                &lt;/script&gt;
+                &lt;script&gt;
+                    function updateBoard(value, id){
+                        if(id === \"-1\") return;
+                        let val = document.getElementById(id).innerHTML;
+                        if(val !== \" \") return;
+                        turn = !turn;
+                        document.getElementById(id).innerHTML = value;
+                    }
+                &lt;/script&gt;
+             &lt;/body&gt;
+             &lt;script&gt;
+                let btns = document.getElementsByTagName(\"button\");
+                for (i = 0; i &lt; 9; i++) {
+                    btns[i].innerHTML = \" \";
+                    btns[i].style.height = \"70px\";
+                    btns[i].style.width = \"70px\";
+                    btns[i].style.borderBottom = \"6px solid black\";
+                    btns[i].style.borderRight = \"6px solid black\";
+                    btns[i].style.fontSize = \"30px\";
+                    btns[i].setAttribute(\"id\", i);
+                    btns[i].onclick = (ev) => {
+                        pressed(ev.target.id);
+                    }
+                }
+             &lt;/script&gt;
+             &lt;/html&gt;
+    </string>
+
+    <string name="RPS_webview">
+        &lt;!DOCTYPE html&gt;
+            &lt;meta name=\'viewport\' content=\"width=device-width, initial-scale=1.0\"/&gt;
+            &lt;html&gt;
+             &lt;head&gt;
+                &lt;title&gt;Title of the document&lt;/title&gt;
+             &lt;/head&gt;
+             &lt;body&gt;
+                &lt;p id=\"status\" style=\"font-size:40px;text-align:center\"&gt;wait for game to start&lt;/p&gt;
+                &lt;p id=\"oppVal\" style=\"font-size:40px;text-align:center\"&gt; &lt;/p&gt;
+                &lt;div id=\"mainDiv\" style=\"margin:35% auto;text-align: center\"&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
+                    &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
+
+                    &lt;button id=\"quit\" onclick=quit()&gt;quit game &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;script&gt;
+                    let turn = false;
+                    function updateStatus(status){
+                        document.getElementById(\"status\").innerHTML = status;
+                    }
+
+                    function createGame(){
+                        let mainDiv = document.getElementById(\"mainDiv\");
+                        mainDiv.style.display = \"none\";
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"createGame\"]();
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                    window.onload = createGame();
+
+                    function initializeGame(isTurn){
+                        let mainDiv = document.getElementById(\"mainDiv\");
+                        mainDiv.style.display = \"block\";
+                        if(isTurn === \"true\")
+                            turn = true;
+                    }
+
+                    function pressed(id){
+                        if(!turn) return;
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"makeMove\"](id);
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                    function quit(){
+                        let handled = false;
+                        try{
+                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                                Android[\"handleGameQuitChoice\"](1);
+                                handled = true;
+                            }
+                        }
+                        catch(error){
+                            throw error;
+                        }
+                        if(!(handled)){
+                            throw \"Unable to handle \" + app.messageHandlerName;
+                        }
+                    }
+
+                &lt;/script&gt;
+                &lt;script&gt;
+                    function updateBoard(value, id){
+                        if(id === \"-1\") return;
+
+                    }
+                &lt;/script&gt;
+             &lt;/body&gt;
+             &lt;script&gt;
+                const names = [\"rock\", \"paper\", \"scissor\"];
+                let btns = document.getElementsByTagName(\"button\");
+                for (i = 0; i &lt; 3; i++) {
+                    btns[i].innerHTML = \" \";
+                    btns[i].style.height = \"130px\";
+                    btns[i].style.width = \"130px\";
+                    btns[i].style.borderBottom = \"6px solid black\";
+                    btns[i].style.borderRight = \"6px solid black\";
+                    btns[i].style.fontSize = \"30px\";
+                    btns[i].setAttribute(\"id\", i+1);
+                    btns[i].innerHTML = names[i];
+                    btns[i].onclick = (ev) => {
+                        pressed(ev.target.id);
+                    }
+                }
+             &lt;/script&gt;
+             &lt;/html&gt;
+    </string>
 </resources>

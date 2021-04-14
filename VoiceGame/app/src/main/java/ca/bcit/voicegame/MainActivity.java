@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                String server_name = "192.168.1.91";
+                String server_name = "10.0.2.2";
                 int server_port = 4445;
                 String data_to_send = "testData";
 
@@ -156,6 +156,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToTTT(View view) {
         Intent i = new Intent(this, TttActivity.class);
+        startActivity(i);
+    }
+
+    public void goToRPS(View view) {
+        Intent i = new Intent(this, RpsActivity.class);
         startActivity(i);
     }
 }
