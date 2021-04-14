@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                String server_name = "10.0.2.2";
+                String server_name = "192.168.1.91";
                 int server_port = 4445;
                 String data_to_send = "testData";
 

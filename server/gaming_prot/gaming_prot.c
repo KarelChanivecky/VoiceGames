@@ -7,95 +7,26 @@
 #define RES_HEADER_SIZE 3
 #define UPD_HEADER_SIZE 3
 
-#define UID_LEN 2
-
-#define PAYLOAD_GAME_INDEX 1
-
-#define PAYLOAD_MOVE_INDEX 0
-
-static struct {
-    const int TYPE;
-    const int CONTEXT;
-    const int PAYLOAD_LENGTH;
-} const ReqIndexes = {
-        4, 5, 6
-};
+#define UID_LEN 4
 
 
-typedef struct {
-    const int STATUS;
-    const int REQ_TYPE;
-    const int PAYLOAD_LENGTH;
-} s_res_index;
-
-static s_res_index ResIndexes = {
-        0, 1, 2
-};
-
-static const struct {
-    const int STATUS;
-    const int CONTEXT;
-    const int PAYLOAD_LENGTH;
-} UpdIndexes = { 0, 1, 2 };
 
 
-enum req_types {
-    REQ_CONFIRMATION = 1,
-    REQ_INFORMATION,
-    REQ_META,
-    REQ_ACTION
-};
+static uint8_t games_available[] = {1, 2};
 
-enum statuses {
-    ST_SUCCESS = 10,
-    ST_UPDATE = 20,
-    ST_INVALID_REQ = 30,
-    ST_INVALID_UID,
-    ST_INVALID_TYPE,
-    ST_INVALID_CONTEXT,
-    ST_INVALID_PAYLOAD,
-    ST_SERVER_ERROR = 40,
-    ST_INVALID_ACTION = 50,
-    ST_OUT_OF_TURN = 51
-};
-
-enum req_conf_contexts {
-    CONF_RULESET = 1,
-};
-
-enum req_meta_contexts {
-    META_QUIT = 1
-};
-
-enum req_action_contexts {
-    ACT_MAKE_MOVE = 1
-};
-
-enum upd_contexts {
-    UPD_START_GAME = 1,
-    UPD_MOVE_MADE,
-    UPD_END_OF_GAME,
-    UPD_OPP_DISCONNECTED
-};
-
-static uint8_t * games_available = NULL;
-
-int read_fd( int fd, uint8_t * buff, int bytes_c ) {
-    int status = read( fd, buff, bytes_c );
+int read_fd( int fd, uint8_t * buff, size_t bytes_c ) {
+    int status = ( int ) read( fd, buff, bytes_c );
     if ( status <= 0 ) {
-        if ( errno == EBADF ) {
-            return PLAYER_DISCONNECTED;
-        }
-        return INTERNAL_ERR;
+        return PLAYER_DISCONNECTED;
     }
-    if ( status < bytes_c ) {
+    if ( status < (int) bytes_c ) {
         return INSUFFICIENT_DATA;
     }
-    return status;
+    return GPROT_OK;
 }
 
 int write_fd( int fd, uint8_t * buff, int bytes_c ) {
-    int stat = write( fd, buff, bytes_c );
+    int stat = ( int ) write( fd, buff, bytes_c );
 
     if ( stat == 0 ) {
         return PLAYER_DISCONNECTED;
@@ -109,43 +40,53 @@ int write_fd( int fd, uint8_t * buff, int bytes_c ) {
         return INCOMPLETE_WRITE;
     }
 
-    return stat;
+    return GPROT_OK;
 }
 
 int read_header( int client, Request * req, size_t header_size ) {
     uint8_t buff[header_size];
     int stat = read_fd( client, buff, header_size );
-    if ( stat <= 0 ) {
+    if ( stat != GPROT_OK ) {
         return stat;
     }
 
-    req->uid = ntohs( *(( uint32_t * ) buff ));
+    req->uid = ntohl( *(( uint32_t * ) buff ));
     req->type = buff[ ReqIndexes.TYPE ];
     req->context = buff[ ReqIndexes.CONTEXT ];
     req->payload_length = buff[ ReqIndexes.PAYLOAD_LENGTH ];
 
-    return stat;
+    return GPROT_OK;
 }
 
 int read_msg( int client, Request * req ) {
     int stat = read_header( client, req, REQ_HEADER_SIZE );
 
-    if ( stat == -1 ) {
+    if ( stat == PLAYER_DISCONNECTED ) {
         return PLAYER_DISCONNECTED;
+    }
+
+    if (stat == INTERNAL_ERR) {
+        return INTERNAL_ERR;
     }
 
     if ( req->payload_length == 0 ) {
         req->payload = NULL;
-        return stat;
+        return GPROT_OK;
     }
-
+    // TODO payloads are a potential source of mem leaks
     req->payload = ( uint8_t * ) malloc( sizeof( uint8_t ) * req->payload_length );
 
     if ( !req->payload ) {
         return INTERNAL_ERR;
     }
 
-    return read_fd( client, req->payload, req->payload_length );
+    int payload_read_stat = read_fd( client, req->payload, req->payload_length );
+
+    if (payload_read_stat != GPROT_OK) {
+        return payload_read_stat;
+    }
+
+    return GPROT_OK;
 }
 
 int respond( int client, Response * res ) {
@@ -171,14 +112,6 @@ int update( int client, Update * upd ) {
         buff[ UPD_HEADER_SIZE + i ] = p[ i ];
     }
     return write_fd( client, buff, RES_HEADER_SIZE + upd->payload_length );
-}
-
-bool set_games_supported( uint8_t * game_ids ) {
-    if ( !game_ids ) {
-        return false;
-    }
-    games_available = game_ids;
-    return true;
 }
 
 int respond_status( int client, uint8_t req_type, uint8_t status ) {
@@ -222,8 +155,8 @@ int respond_server_error( int client, uint8_t req_type ) {
     return respond_status( client, req_type, ST_SERVER_ERROR );
 }
 
-int respond_invalid_uid( int client, uint8_t req_type) {
-    return respond_status(client, req_type, ST_INVALID_UID);
+int respond_invalid_uid( int client, uint8_t req_type ) {
+    return respond_status( client, req_type, ST_INVALID_UID );
 }
 
 int respond_uid( int client, uint32_t uid ) {
@@ -250,6 +183,14 @@ int update_start_game( int client ) {
     return update( client, &upd );
 }
 
+int update_start_game_with_payload( int client, size_t payload_length, uint8_t * payload ) {
+    Update upd;
+    upd.status = ST_UPDATE;
+    upd.context = UPD_START_GAME;
+    upd.payload_length = payload_length;
+    upd.payload = payload;
+    return update( client, &upd );
+}
 
 int update_move( int client, uint8_t * move, size_t move_size ) {
     Update upd;
@@ -291,7 +232,7 @@ int validate_field( int client, int field, uint8_t req_type, int expected, int (
         return INVALID_REQ;
     }
 
-    return OK;
+    return GPROT_OK;
 }
 
 int validate_type( int client, Request * req, int expected ) {
@@ -306,22 +247,31 @@ int read_game_choice( int client, Request * req ) {
     int stat = read_msg( client, req );
 
     int type_stat = validate_type( client, req, REQ_CONFIRMATION );
-    if ( type_stat != OK ) {
+    if ( type_stat != GPROT_OK ) {
         return type_stat;
     }
 
     int context_stat = validate_context( client, req, CONF_RULESET );
-    if ( context_stat != OK ) {
+    if ( context_stat != GPROT_OK ) {
         return context_stat;
+    }
+
+    if ( req->payload_length != PayloadLengths.GAME_CHOICE ) {
+        int res_stat = respond_invalid_payload( client, req->type );
+        if ( res_stat <= 0 ) {
+            return res_stat;
+        }
+        return INVALID_REQ;
     }
 
     uint8_t * games = games_available;
 
     bool game_available = false;
     while ( *games ) {
-        if ( *games == req->payload[ PAYLOAD_GAME_INDEX ] ) {
+        if ( *games == req->payload[ GPROT_PAYLOAD_GAME_INDEX ] ) {
             game_available = true;
         }
+        games++;
     }
 
     if ( !game_available ) {
@@ -339,44 +289,27 @@ int read_game_choice( int client, Request * req ) {
 }
 
 
-int read_move( int client, Request * req, uint8_t * available_moves ) {
+int read_move( int client, Request * req ) {
 
     uint32_t expected_uid = req->uid;
 
     int stat = read_msg( client, req );
+    if (stat != GPROT_OK) {
+        return stat;
+    }
 
     int type_stat = validate_type( client, req, REQ_ACTION | REQ_META );
-    if ( type_stat != OK ) {
+    if ( type_stat != GPROT_OK ) {
         return type_stat;
     }
 
     int context_stat = validate_context( client, req, ACT_MAKE_MOVE | META_QUIT );
-    if ( context_stat != OK ) {
+    if ( context_stat != GPROT_OK ) {
         return context_stat;
     }
 
     if ( req->context == META_QUIT ) {
-        return stat;
-    }
-
-    uint8_t * moves = available_moves;
-
-    bool move_available = false;
-    while ( *moves ) {
-        if ( *moves == req->payload[ PAYLOAD_MOVE_INDEX ] ) {
-            move_available = true;
-        }
-    }
-
-    if ( !move_available ) {
-
-        int res_stat = respond_invalid_action( client, req->type );
-
-        if ( res_stat <= 0 ) {
-            return res_stat;
-        }
-
-        return INVALID_REQ;
+        return GPROT_OK;
     }
 
     if ( req->uid != expected_uid ) {
@@ -390,7 +323,7 @@ int read_move( int client, Request * req, uint8_t * available_moves ) {
         return INVALID_REQ;
     }
 
-    return stat;
+    return GPROT_OK;
 }
 
 

@@ -28,13 +28,13 @@
 #define OK true
 #endif
 
+#define NO_PORT 0
+#define UDP_INBOUND_PORT 2001
+#define UDP_OUTBOUND_PORT 2002
 
-#define UDP_VOICE_PORT 2001
-
-#define DATAGRAM_LEN 5008
+#define DATAGRAM_LEN 5010
 
 #define DATAGRAM_SAMPLE_C 2500
-
 
 enum foo {
     ERR_RECV = -120,
@@ -43,18 +43,22 @@ enum foo {
 };
 
 
+
 typedef struct {
     uint32_t order;
     uint32_t uid;
+    uint16_t port;
     uint16_t samples[DATAGRAM_SAMPLE_C];
 } datagram_t;
 
 
-int recv_voice(int sock, datagram_t * datagram, struct sockaddr * client_addr);
+int recv_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr, socklen_t * client_len );
 
-int send_voice(int sock, datagram_t * datagram, struct sockaddr * client_addr);
+int send_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr );
 
-int get_voice_sock();
+int get_inbound_sock();
+
+int get_outbound_sock();
 
 
 #endif //TIC_TAC_TOE_VOICE_PROT_H
