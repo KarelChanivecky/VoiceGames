@@ -11,7 +11,7 @@
 #include "dc_utils/dc_threaded_queue.h"
 #include "../game_server.h"
 
-bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
+bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr , int s) {
     int uid = (int) datagram->uid;
     game_environment * game_env = game_collection.get(uid);
 
@@ -23,16 +23,18 @@ bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
 
     int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
             ? PLAYER_1_INDEX : PLAYER_2_INDEX;
-    struct sockaddr_in * socket = &game_env->voice_sockets[index];
+    struct sockaddr_in * stored_addr = &game_env->voice_sockets[index];
 
-    if (socket->sin_port != NO_PORT) {
+    if ( stored_addr->sin_port != NO_PORT) {
         game_collection.lock();
         return true;
     }
 
-    memcpy(socket, client_addr, sizeof (struct sockaddr_in));
+    memcpy( stored_addr, client_addr, sizeof (struct sockaddr_in));
 
     game_collection.unlock();
+
+    send_voice( s, datagram, ( struct sockaddr * ) stored_addr );
 
     return true;
 }
@@ -53,10 +55,12 @@ void * listener( void * v_datagram_queue ) {
             free(datagram);
             continue;
         }
-        send_voice(socket, datagram, (struct sockaddr*)&client_addr);
+
+        set_client_addr(datagram, &client_addr, socket);
 //        if (set_client_addr(datagram, &client_addr)) {
 //            queue->add(queue, datagram);
 //        }
+        puts("sent");
     }
 }
 
