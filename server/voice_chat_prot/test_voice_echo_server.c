@@ -17,12 +17,11 @@ int main() {
 //        printf("client port: %d", client.sin_port);
 //        puts("received");
 
-        struct sockaddr_in recv_address;
         char str[INET_ADDRSTRLEN + 1];
-        inet_ntop(AF_INET, &(recv_address.sin_addr), str, INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &client.sin_addr, str, INET_ADDRSTRLEN);
 
-        printf("%d\n", client_len);
-        printf("%d\n", ntohs(recv_address.sin_port));
+        printf("%d\n", client.sin_family);
+        printf("%d\n", ntohs(client.sin_port));
         printf("%s\n", str);
 
 

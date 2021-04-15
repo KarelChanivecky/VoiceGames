@@ -14,12 +14,13 @@
 bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
 
-    printf("uid :%d\n", uid);
+    printf("listener uid :%d\n", uid);
     game_environment * game_env = game_collection.get(uid);
 
     game_collection.lock();
 
     if (!game_env) {
+        puts("not found");
         game_collection.unlock();
         return false;
     }
@@ -70,6 +71,9 @@ void * talker( void * v_datagram_queue ) {
     while ( 1 ) {
         datagram_t * datagram = queue->take(queue);
         int uid = (int) datagram->uid;
+
+        printf("talker uid :%d\n", uid);
+
         game_environment * game_env = game_collection.get(uid);
         game_collection.lock();
 
@@ -86,6 +90,12 @@ void * talker( void * v_datagram_queue ) {
             game_collection.unlock();
             continue;
         }
+
+        char str[INET_ADDRSTRLEN + 1];
+        inet_ntop(AF_INET, &client_addr->sin_addr, str, INET_ADDRSTRLEN);
+        printf("%d\n", client_addr->sin_family);
+        printf("%d\n", ntohs(client_addr->sin_port));
+        printf("%s\n", str);
 
         send_voice(socket, datagram, (struct sockaddr*)client_addr);
 
