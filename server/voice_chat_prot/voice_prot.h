@@ -29,8 +29,10 @@
 #endif
 
 #define NO_PORT 0
-#define UDP_INBOUND_PORT 2001
-#define UDP_OUTBOUND_PORT 2002
+
+// The class actually agreed per protocol to use these sockets
+#define UDP_INBOUND_PORT 2034
+#define UDP_OUTBOUND_PORT 2035
 
 #define DATAGRAM_LEN 5010
 

@@ -3,7 +3,7 @@
 */
 
 #include "ttt.h"
-#include "../../lib/common_symbols.h"   `
+#include "../../lib/common_symbols.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

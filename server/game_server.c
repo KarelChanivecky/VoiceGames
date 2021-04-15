@@ -66,6 +66,8 @@ void initialize_service_threads( int server_fd, int new_game_signal ) {
     initialize_handshaking( new_client_list, handshaked_clients );
 
     initialize_new_client_plexer( handshaked_clients, new_game_signal );
+
+    initialize_voice_server();
 }
 
 bool asses_read_move_state( int client, game_environment * game_env, int status) {
