@@ -21,85 +21,86 @@
 
                     &lt;button id=\"quit\" onclick=quit()&gt;quit game &lt;/button&gt;
                 &lt;/div&gt;
-                &lt;script&gt;
-                    let turn = false;
-                    function updateStatus(status){
-                        document.getElementById(\"status\").innerHTML = status;
-                    }
+            &lt;/body&gt;
+            &lt;script&gt;
+                let turn = false;
+                function updateStatus(status){
+                    document.getElementById(\"status\").innerHTML = status;
+                }
 
-                    function createGame(){
-                        let mainDiv = document.getElementById(\"mainDiv\");
-                        mainDiv.style.display = \"none\";
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"createGame\"]();
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
+                function createGame(){
+                    let mainDiv = document.getElementById(\"mainDiv\");
+                    mainDiv.style.display = \"none\";
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"createGame\"]();
+                            handled = true;
                         }
                     }
-
-                    window.onload = createGame();
-
-                    function initializeGame(isTurn){
-                        let mainDiv = document.getElementById(\"mainDiv\");
-                        mainDiv.style.display = \"block\";
-                        if(isTurn === \"true\")
-                            turn = true;
+                    catch(error){
+                        throw error;
                     }
-
-                    function pressed(id){
-                        let value = document.getElementById(id).innerHTML;
-                        if(value !== \" \") return;
-                        if(!turn) return;
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"makeMove\"](id);
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
-                        }
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
                     }
+                }
 
-                    function quit(){
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"handleGameQuitChoice\"](1);
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
+                window.onload = createGame();
+
+                function initializeGame(isTurn){
+                    let mainDiv = document.getElementById(\"mainDiv\");
+                    mainDiv.style.display = \"block\";
+                    if(isTurn === \"true\")
+                        turn = true;
+                }
+
+                function pressed(id){
+                    let value = document.getElementById(id).innerHTML;
+                    if(value !== \" \") return;
+                    if(!turn) return;
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"makeMove\"](id);
+                            handled = true;
                         }
                     }
-
-                &lt;/script&gt;
-                &lt;script&gt;
-                    function updateBoard(value, id){
-                        if(id === \"-1\") return;
-                        let val = document.getElementById(id).innerHTML;
-                        if(val !== \" \") return;
-                        turn = !turn;
-                        document.getElementById(id).innerHTML = value;
+                    catch(error){
+                        throw error;
                     }
-                &lt;/script&gt;
-             &lt;/body&gt;
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
+                    }
+                }
+
+                function quit(){
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"handleGameQuitChoice\"](1);
+                            handled = true;
+                        }
+                    }
+                    catch(error){
+                        throw error;
+                    }
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
+                    }
+                }
+
+            &lt;/script&gt;
+            &lt;script&gt;
+                function updateBoard(value, id){
+                    if(id === \"-1\") return;
+                    let val = document.getElementById(id).innerHTML;
+                    if(val !== \" \") return;
+                    turn = !turn;
+                    document.getElementById(id).innerHTML = value;
+                }
+            &lt;/script&gt;
+
              &lt;script&gt;
                 let btns = document.getElementsByTagName(\"button\");
                 for (i = 0; i &lt; 9; i++) {

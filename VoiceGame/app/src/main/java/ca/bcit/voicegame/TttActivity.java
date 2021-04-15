@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
@@ -19,6 +20,8 @@ public class TttActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         WebSettings settings;
         System.out.println("started");
         super.onCreate(savedInstanceState);
@@ -52,6 +55,7 @@ public class TttActivity
         String opp_sym = "O";
         String move = "X";
         String status = "You are 'X'. Make your move.";
+        int mtx = 0;
         boolean turn = true;
 
         @JavascriptInterface
@@ -100,9 +104,17 @@ public class TttActivity
             status = "Wait for opponent's turn.";
             turn = !turn;
             num_moves++;
+            mtx = 0;
             updateBoardAndStatus(move, cell, status);
+            
+            while (mtx == 0){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            };
             handleOpponentMove();
-
         }
 
         @JavascriptInterface
@@ -144,15 +156,17 @@ public class TttActivity
                     webView.evaluateJavascript("updateBoard('" + val+ "', '" + id + "')", new ValueCallback<String>() {
                         @Override
                         public void onReceiveValue(String value) {
+                            webView.evaluateJavascript("updateStatus('" + stat+ "')", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    mtx = 1;
+                                    System.out.println("Done");
+                                }
+                            });
                             System.out.println("Done");
                         }
                     });
-                    webView.evaluateJavascript("updateStatus('" + stat+ "')", new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String value) {
-                            System.out.println("Done");
-                        }
-                    });
+
                 }
             });
         }
