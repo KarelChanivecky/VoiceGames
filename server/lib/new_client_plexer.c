@@ -23,17 +23,17 @@ void init_game_players( dlinked_list * game_players[AVAILABLE_GAME_COUNT] ) {
     }
 }
 
-int plex_next_client( extended_thread_list_t * clients, dlinked_list * const * game_players) {
+int plex_next_client( extended_thread_list_t * clients, dlinked_list * const * game_players ) {
     sem_wait( &clients->items_sem );
     pthread_mutex_lock( &clients->list_mx );
     handshaked_client_t * client = dlinked_pop_head( clients->list );
-    printf("Plexing %d\n", client->client_fd);
-    dlinked_push( game_players[ client->game_choice ], ( void * ) ( unsigned long ) client->client_fd );
+    printf( "Plexing %d\n", client->client_fd );
+    dlinked_push( game_players[ client->game_choice - 1 ], ( void * ) ( unsigned long ) client->client_fd );
     pthread_mutex_unlock( &clients->list_mx );
-    if ( game_players[ client->game_choice ]->size == 2 ) {
+    if ( game_players[ client->game_choice - 1 ]->size == 2 ) {
         return client->game_choice;
     }
-    free(client);
+    free( client );
     return NO_DICE;
 }
 
@@ -44,12 +44,12 @@ void build_game( dlinked_list * clients, game_funcs game ) {
         game_clients[ i ] = ( int ) ( unsigned long ) dlinked_pop_head( clients );
     }
 
-    game_collection.create(game_clients[PLAYER_1_INDEX], game_clients[PLAYER_2_INDEX], game);
+    game_collection.create( game_clients[ PLAYER_1_INDEX ], game_clients[ PLAYER_2_INDEX ], game );
 
 }
 
 _Noreturn void * new_client_plexer_thread( void * vargs ) {
-    puts("Started multiplexing clients");
+    puts( "Started multiplexing clients" );
     new_client_plexer_args_t * args = ( new_client_plexer_args_t * ) vargs;
     dlinked_list * game_players[AVAILABLE_GAME_COUNT];
     init_game_players( game_players );
@@ -61,16 +61,16 @@ _Noreturn void * new_client_plexer_thread( void * vargs ) {
             continue;
         }
 
-        if (game_to_build == TTT) {
-            puts("built TTT");
-            build_game(game_players[game_to_build], ttt);
+        if ( game_to_build == TTT ) {
+            puts( "built TTT" );
+            build_game( game_players[ game_to_build - 1 ], ttt );
         } else {
-            puts("built RPS");
-            build_game(game_players[game_to_build], rps);
+            puts( "built RPS" );
+            build_game( game_players[ game_to_build - 1 ], rps );
         }
 
-        if (write(args->new_game_signal, "1", 1) == -1) {
-            perror("why you!");
+        if ( write( args->new_game_signal, "1", 1 ) == -1 ) {
+            perror( "why you!" );
         }
     }
 }

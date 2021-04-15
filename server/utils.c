@@ -84,3 +84,10 @@ int await_select( fd_set * client_fd_set ) {
 
     return stat;
 }
+
+int get_other(game_environment * env) {
+    if (env->mover == env->game_sockets[0]) {
+        return env->game_sockets[1];
+    }
+    return env->game_sockets[0];
+}

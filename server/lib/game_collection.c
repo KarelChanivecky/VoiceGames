@@ -92,9 +92,16 @@ void gcol_remove( int uid ) {
 
     pthread_mutex_lock( &gcol_mx );
     game_environment * game_to_remove = gcol_games[ uid ];
+    printf("terminating game %d vs %d\n",
+           game_to_remove->game_sockets[PLAYER_1_INDEX],
+           game_to_remove->game_sockets[PLAYER_2_INDEX]);
     int other = get_other_uid( game_to_remove, uid );
     gcol_games[ uid ] = NULL;
     gcol_games[ other ] = NULL;
+    struct timespec timeout = {
+            0, 200000
+    };
+    nanosleep(&timeout, NULL);
     close(game_to_remove->game_sockets[PLAYER_1_INDEX]);
     close(game_to_remove->game_sockets[PLAYER_2_INDEX]);
     game_to_remove->game.destruct_game( game_to_remove );

@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <stdio.h>
 
 #define REQ_HEADER_SIZE 7
 #define RES_HEADER_SIZE 3
@@ -217,6 +218,7 @@ int update_end_game( int client, uint8_t * payload, size_t payload_len ) {
 
 
 int update_opp_disconn( int client ) {
+    printf("%d's opponent disconnected\n", client);
     Update upd;
     upd.status = ST_UPDATE;
     upd.context = UPD_OPP_DISCONNECTED;

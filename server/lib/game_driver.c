@@ -7,35 +7,25 @@
 #include "../games/fsm_symbols.h"
 #include "common_symbols.h"
 #include "../gaming_prot/gaming_prot.h"
+#include "../utils.h"
 
-int get_other(game_environment * env) {
-    if (env->mover == env->game_sockets[0]) {
-        return env->game_sockets[1];
-    }
-    return env->game_sockets[0];
-}
 
 int evaluate_move_state(game_environment * env, int move_state) {
     switch ( move_state ) {
         case WON: {
-            uint8_t winner_payload[] = { WON, env->move};
-            update_end_game( env->mover, winner_payload, 2);
-            uint8_t loser_payload[] = { LOST, env->move};
-            update_end_game( get_other(env), loser_payload, 2);
+            env->game.won(env);
             return DESTROY;
         }
         case TIE: {
-            uint8_t payload[] = { TIE, env->move};
-            update_end_game( env->mover, payload, 2);
-            update_end_game( get_other(env), payload, 2);
+            env->game.tied(env);
             return DESTROY;
         }
         case LOST: {
-            uint8_t winner_payload[] = { WON, env->move};
-            update_end_game( get_other(env), winner_payload, 2);
-            uint8_t loser_payload[] = { LOST, env->move};
-            update_end_game( env->mover, loser_payload, 2);
+            env->game.lost(env);
             return DESTROY;
+        }
+        case SILENT_MOVE: {
+            return OK;
         }
         default: {
             uint8_t payload[] = { env->move };

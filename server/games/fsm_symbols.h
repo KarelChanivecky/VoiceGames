@@ -33,5 +33,6 @@ enum internal_errs {
 #define MOVE_INDEX 0
 #define QUIT 0
 #define NO_CHOICE 0
+#define SILENT_MOVE 22
 
 #endif //GAME_SERVER_FSM_SYMBOLS_H

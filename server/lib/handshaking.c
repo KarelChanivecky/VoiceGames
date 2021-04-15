@@ -39,6 +39,7 @@ void receive_new_clients( dlinked_list * clients, extended_thread_list_t * new_c
 handshaked_client_t * handshake_client( int client, int * stat ) {
     Request req;
     *stat = read_game_choice( client, &req );
+
     if ( *stat < 0 ) {
         return NULL;
     }
@@ -68,18 +69,22 @@ dlinked_list * handshake_clients( dlinked_list * clients, fd_set * selector ) {
     int client = ( int ) ( unsigned long ) dlinked_pop_head( clients );
     while ( client ) {
         if ( !FD_ISSET( client, selector )) {
+            // wasn't ready to shake hands
             dlinked_push( clients, ( void * ) ( unsigned long ) client );
             continue;
         }
 
-        int handshake_stat = OK;
+        int handshake_stat = GPROT_OK;
         handshaked_client_t * handshaked_client = handshake_client( client, &handshake_stat );
-        if ( !handshaked_client && handshake_stat != PLAYER_DISCONNECTED ) {
-            dlinked_push( clients, ( void * ) ( unsigned long ) client );
-            continue;
+
+        if (handshaked_client && handshake_stat == GPROT_OK) {
+            dlinked_push( handshaked_clients, handshaked_client );
         }
 
-        dlinked_push( handshaked_clients, handshaked_client );
+        if ( !handshaked_client && (handshake_stat != PLAYER_DISCONNECTED) ) {
+            dlinked_push( clients, ( void * ) ( unsigned long ) client );
+        }
+
         client = ( int ) ( unsigned long ) dlinked_pop_head( clients );
     }
 

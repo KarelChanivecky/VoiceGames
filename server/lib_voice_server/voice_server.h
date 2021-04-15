@@ -13,4 +13,6 @@ typedef struct {
     pthread_mutex_t socket_mx;
 } voice_client_sockets_t;
 
+void initialize_voice_server();
+
 #endif //LIB_VOICE_CHAT_H
