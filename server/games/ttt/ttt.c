@@ -12,6 +12,8 @@
 #include "ttt_utils.h"
 #include "../fsm_symbols.h"
 #include "../../lib/game_environment.h"
+#include "../../game_server.h"
+#include "../../utils.h"
 
 
 /**
@@ -83,7 +85,6 @@ void * make_ttt_game_state(int * status) {
     int who_is_X = rand() % 2;
 
     state->player_1_is_X = who_is_X == PLAYER_1_INDEX;
-
     *status = OK;
     return state;
 }
@@ -118,11 +119,33 @@ int game_start(game_environment * env) {
     return OK;
 }
 
+int won(game_environment * env) {
+    uint8_t winner_payload[] = { WON, env->move};
+    update_end_game( env->mover, winner_payload, 2);
+    uint8_t loser_payload[] = { LOST, env->move};
+    update_end_game( get_other(env), loser_payload, 2);
+    return OK;
+}
+
+int tied(game_environment * env) {
+    uint8_t payload[] = { TIE, env->move};
+    update_end_game( env->mover, payload, 2);
+    update_end_game( get_other(env), payload, 2);
+    return OK;
+}
+
+int lost(game_environment * _) {
+    return OK; // not possible to fall here for ttt
+}
 
 game_funcs ttt = {
         validate_move,
         evaluate_move,
+        won,
+        tied,
+        lost,
         game_start,
         destroy_ttt,
         make_ttt_game_state,
+        TTT
 };

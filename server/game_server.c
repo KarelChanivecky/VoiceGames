@@ -144,7 +144,7 @@ void serve_clients( fd_set * client_fd_set ) {
 
         stat = play_game( game_env );
 
-        printf("play status for %d: %d", client, stat);
+        printf("play status for %d: %d\n", client, stat);
         if (stat == DESTROY) {
             game_collection.remove( client);
         }

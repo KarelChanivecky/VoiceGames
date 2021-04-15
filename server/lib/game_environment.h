@@ -16,9 +16,13 @@ typedef void * (*constructor)(int * status);
 typedef struct {
     game_func validate_move;
     game_func evaluate_move;
+    game_func won;
+    game_func tied;
+    game_func lost;
     game_func start_game;
     game_func destruct_game;
     constructor construct_game;
+    int game_name;
 } game_funcs;
 
 typedef struct game_environment{

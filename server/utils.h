@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <sys/select.h>
 #include <pthread.h>
+#include "lib/game_environment.h"
 
 typedef struct {
     int port;
@@ -33,5 +34,7 @@ void get_socket( server_config * server_cfg );
 void lock_mx( pthread_mutex_t * mutex );
 
 void unlock_mx( pthread_mutex_t * mutex );
+
+int get_other( game_environment * env );
 
 #endif //THE_ACTUAL_FSN_UTILS_H
