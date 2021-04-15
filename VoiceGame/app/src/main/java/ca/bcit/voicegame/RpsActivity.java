@@ -22,6 +22,7 @@ public class RpsActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ttt);
+        refreshValues();
 
         webView = (WebView) findViewById(R.id.webView);
 
@@ -213,8 +214,9 @@ public class RpsActivity
     protected void onStop()
     {
         try {
-            super.onStop();
+
             ac.stopStreamingAudio();
+            super.onStop();
 //            if (socket != null) socket.close();
         } catch (Exception e) {
             e.printStackTrace();
