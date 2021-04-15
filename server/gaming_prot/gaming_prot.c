@@ -10,16 +10,14 @@
 #define UID_LEN 4
 
 
-
-
-static uint8_t games_available[] = {1, 2};
+static uint8_t games_available[] = { 1, 2 };
 
 int read_fd( int fd, uint8_t * buff, size_t bytes_c ) {
     int status = ( int ) read( fd, buff, bytes_c );
     if ( status <= 0 ) {
         return PLAYER_DISCONNECTED;
     }
-    if ( status < (int) bytes_c ) {
+    if ( status < ( int ) bytes_c ) {
         return INSUFFICIENT_DATA;
     }
     return GPROT_OK;
@@ -65,8 +63,9 @@ int read_msg( int client, Request * req ) {
         return PLAYER_DISCONNECTED;
     }
 
-    if (stat == INTERNAL_ERR) {
-        return INTERNAL_ERR;
+    if ( stat == INSUFFICIENT_DATA ) {
+        respond_invalid_payload( client, req->type );
+        return INSUFFICIENT_DATA;
     }
 
     if ( req->payload_length == 0 ) {
@@ -82,7 +81,12 @@ int read_msg( int client, Request * req ) {
 
     int payload_read_stat = read_fd( client, req->payload, req->payload_length );
 
-    if (payload_read_stat != GPROT_OK) {
+    if ( payload_read_stat == INSUFFICIENT_DATA ) {
+        respond_invalid_payload( client, req->type );
+        return INSUFFICIENT_DATA;
+    }
+
+    if ( payload_read_stat != GPROT_OK ) {
         return payload_read_stat;
     }
 
@@ -246,6 +250,10 @@ int validate_context( int client, Request * req, int expected ) {
 int read_game_choice( int client, Request * req ) {
     int stat = read_msg( client, req );
 
+    if ( stat != GPROT_OK ) {
+        return stat;
+    }
+
     int type_stat = validate_type( client, req, REQ_CONFIRMATION );
     if ( type_stat != GPROT_OK ) {
         return type_stat;
@@ -294,7 +302,7 @@ int read_move( int client, Request * req ) {
     uint32_t expected_uid = req->uid;
 
     int stat = read_msg( client, req );
-    if (stat != GPROT_OK) {
+    if ( stat != GPROT_OK ) {
         return stat;
     }
 

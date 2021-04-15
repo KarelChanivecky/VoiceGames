@@ -117,6 +117,8 @@ void serve_clients( fd_set * client_fd_set ) {
         if ( game_env == NULL) {
             continue;
         }
+
+        rea
         Request req;
         int stat = read_move( client, &req);
 
