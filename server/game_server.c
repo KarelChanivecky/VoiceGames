@@ -117,18 +117,22 @@ void serve_clients( fd_set * client_fd_set ) {
         }
 
         game_environment * game_env = game_collection.get( client );
+        printf("serving %d game env is %s\n", client, game_env ? "NULL" : "NOT NULL" );
         if ( game_env == NULL) {
             continue;
         }
 
         Request req;
         int stat = read_move( client, &req);
+        printf("serving %d Read state %d\n", client, stat);
 
         if (!asses_read_move_state( client, game_env, stat )) {
+            printf("serving bad client: %d\n", client);
             continue;
         }
 
         if (asses_quit( client, game_env, &req )) {
+            printf("player quit %d\n", client);
             continue;
         }
 
@@ -140,6 +144,7 @@ void serve_clients( fd_set * client_fd_set ) {
 
         stat = play_game( game_env );
 
+        printf("play status for %d: %d", client, stat);
         if (stat == DESTROY) {
             game_collection.remove( client);
         }
