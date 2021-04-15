@@ -1,5 +1,7 @@
 package ca.bcit.voicegame;
 
+import android.os.StrictMode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -76,8 +78,8 @@ public class TTTutils {
     static final byte OPPONENT_DISCONNECTED = 4;
 
     // Server Address and Port
-    static final String SERVER_ADDRESS = "10.0.2.2";
-    static final int TCP_PORT = 3001;
+    static final String SERVER_ADDRESS = "karelc.com";
+    static final int TCP_PORT = 3000;
 
     //ByteBuffer Capacities
     static final int IN_CAP = 20;
@@ -90,6 +92,7 @@ public class TTTutils {
     static Socket socket;
     static InputStream input;
     static OutputStream output;
+
 
     private static boolean connectToServer(){
         try {
@@ -120,9 +123,9 @@ public class TTTutils {
         }
     }
 
-    private static ByteBuffer readFromServer(){
-        ByteBuffer inBuff = ByteBuffer.allocate(IN_CAP);
-        byte[] arr = new byte[IN_CAP];
+    private static ByteBuffer readFromServer(int length){
+        ByteBuffer inBuff = ByteBuffer.allocate(length);
+        byte[] arr = new byte[length];
         int read = 0;
         try {
             read = input.read(arr);
@@ -163,7 +166,7 @@ public class TTTutils {
     }
 
     private static boolean readUIDMsg() {
-        ByteBuffer read_id_buff = readFromServer();
+        ByteBuffer read_id_buff = readFromServer(7);
         if (read_id_buff == null) return false;
         int bytes_read = read_id_buff.position();
         byte server_msg_type = read_id_buff.get(0);
@@ -186,7 +189,9 @@ public class TTTutils {
     }
 
     private static int readGameStartMsg() {
-        ByteBuffer read_buff = readFromServer();
+        int length = 3;
+        if (PRESENT_GAME == GAME_TTT) length = 4;
+        ByteBuffer read_buff = readFromServer(length);
         if (read_buff == null) return -1;
         int bytes_read = read_buff.position();
         byte server_msg_type = read_buff.get(0);
@@ -210,7 +215,7 @@ public class TTTutils {
     }
 
     private static boolean readMoveResponse() {
-        ByteBuffer read_buff = readFromServer();
+        ByteBuffer read_buff = readFromServer(3);
         if (read_buff == null) return false;
         int bytes_read = read_buff.position();
         byte server_msg_type = read_buff.get(0);
@@ -229,7 +234,7 @@ public class TTTutils {
     }
 
     public static int readOpponentMove() {
-        ByteBuffer read_buff = readFromServer();
+        ByteBuffer read_buff = readFromServer(5);
         if (read_buff == null) return -1;
         int bytes_read = read_buff.position();
         byte server_msg_type = read_buff.get(0);
@@ -275,7 +280,7 @@ public class TTTutils {
     }
 
     private static ByteBuffer writeMoveMsg(byte move) {
-        ByteBuffer buff = ByteBuffer.allocate(9);
+        ByteBuffer buff = ByteBuffer.allocate(8);
         buff.putInt(UID);
         buff.put(GAME_ACTION);
         buff.put(MAKE_MOVE);
