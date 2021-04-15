@@ -14,6 +14,7 @@ int main() {
         socklen_t client_len = sizeof(client);
         datagram_t datagram;
         recv_voice( sock, &datagram, ( struct sockaddr * ) &client, &client_len);
+        printf("client port: %d", client.sin_port);
         puts("received");
         send_voice( sock, &datagram, ( struct sockaddr * ) &client );
         puts("sent\n");
