@@ -53,9 +53,10 @@ void * listener( void * v_datagram_queue ) {
             free(datagram);
             continue;
         }
-        if (set_client_addr(datagram, &client_addr)) {
-            queue->add(queue, datagram);
-        }
+        send_voice(socket, datagram, (struct sockaddr*)&client_addr);
+//        if (set_client_addr(datagram, &client_addr)) {
+//            queue->add(queue, datagram);
+//        }
     }
 }
 
@@ -97,6 +98,6 @@ void initialize_voice_server() {
     pthread_t talker_t;
 
     pthread_create(&listener_t, NULL, listener, queue);
-    pthread_create(&talker_t, NULL , talker, queue);
+//    pthread_create(&talker_t, NULL , talker, queue);
     puts("Initialized UDP server");
 }
