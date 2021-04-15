@@ -4,10 +4,12 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include "voice_server.h"
 #include "../lib/game_collection.h"
 #include "../games/fsm_symbols.h"
 #include "dc_utils/dc_threaded_queue.h"
+#include "../game_server.h"
 
 bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
@@ -30,10 +32,6 @@ bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
 
     memcpy(socket, client_addr, sizeof (struct sockaddr_in));
 
-    if (datagram->port != NO_PORT) {
-        socket->sin_port = datagram->port;
-    }
-
     game_collection.unlock();
 
     return true;
@@ -48,9 +46,13 @@ void * listener( void * v_datagram_queue ) {
     while ( 1 ) {
         struct sockaddr_in client_addr;
         datagram_t * datagram = (datagram_t * ) malloc( sizeof(datagram_t));
+
         socklen_t socklen = sizeof(client_addr);
         recv_voice(socket, datagram, (struct sockaddr *) &client_addr, &socklen);
-
+        if (MAX_CONN < datagram->uid ) {
+            free(datagram);
+            continue;
+        }
         if (set_client_addr(datagram, &client_addr)) {
             queue->add(queue, datagram);
         }
@@ -96,5 +98,5 @@ void initialize_voice_server() {
 
     pthread_create(&listener_t, NULL, listener, queue);
     pthread_create(&talker_t, NULL , talker, queue);
-
+    puts("Initialized UDP server");
 }

@@ -34,7 +34,7 @@
 #define UDP_INBOUND_PORT 2034
 #define UDP_OUTBOUND_PORT 2035
 
-#define DATAGRAM_LEN 5010
+#define DATAGRAM_LEN 5008
 
 #define DATAGRAM_SAMPLE_C 2500
 
@@ -49,7 +49,7 @@ enum foo {
 typedef struct {
     uint32_t order;
     uint32_t uid;
-    uint16_t port;
+//    uint16_t port;
     uint16_t samples[DATAGRAM_SAMPLE_C];
 } datagram_t;
 

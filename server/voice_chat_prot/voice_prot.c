@@ -17,9 +17,9 @@
 #define ORDER_INT32_PTR_INDEX 0
 #define UID_INT32_PTR_INDEX 1
 #define UID_INT8_PTR_INDEX 4
-#define PORT_INT16_PTR_INDEX 5
-#define PORT_INT8_PTR_INDEX 8
-#define SAMPLES_INT8_PTR_INDEX 10
+//#define PORT_INT16_PTR_INDEX 5
+//#define PORT_INT8_PTR_INDEX 8
+#define SAMPLES_INT8_PTR_INDEX 8
 
 int recv_( int sock, uint8_t * buffer, size_t buff_len, struct sockaddr * client_addr, socklen_t * addr_len ) {
 
@@ -49,7 +49,7 @@ int recv_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr, 
     uint32_t * buff_as_int32_ptr = ( uint32_t * ) buffer;
     datagram->order = ntohl( buff_as_int32_ptr[ ORDER_INT32_PTR_INDEX ] );
     datagram->uid = ntohl( buff_as_int32_ptr[ UID_INT32_PTR_INDEX ] );
-    datagram->port = ntohs((( uint16_t * ) buffer )[ PORT_INT16_PTR_INDEX ] );
+//    datagram->port = ntohs((( uint16_t * ) buffer )[ PORT_INT16_PTR_INDEX ] );
     memcpy(( void * ) datagram->samples, &buffer[ SAMPLES_INT8_PTR_INDEX ], DATAGRAM_SAMPLE_C * 2 );
 
     return stat;
@@ -59,15 +59,15 @@ int send_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr )
     uint8_t buffer[DATAGRAM_LEN] = { 0 };
     memcpy( buffer, &datagram->order, sizeof( uint32_t ));
     memset( &buffer[ UID_INT8_PTR_INDEX ], 0, sizeof( uint32_t ));
-    datagram->port = htons( datagram->port );
-    memcpy( &buffer[ PORT_INT8_PTR_INDEX ], &datagram->port, sizeof( uint32_t ));
+//    datagram->port = htons( datagram->port );
+//    memcpy( &buffer[ PORT_INT8_PTR_INDEX ], &datagram->port, sizeof( uint32_t ));
     memcpy( &buffer[ SAMPLES_INT8_PTR_INDEX ], &datagram->samples, DATAGRAM_SAMPLE_C * 2 );
 
-    struct sockaddr_in * fake_shit = ( struct sockaddr_in * ) client_addr;
-    fake_shit->sin_port = htons( 4445 ); // TODO remove
-    fake_shit->sin_family = AF_INET;
-    inet_pton( AF_INET, "127.0.0.1", &fake_shit->sin_addr );
-    int stat = send_( sock, buffer, DATAGRAM_LEN, ( struct sockaddr * ) fake_shit );
+//    struct sockaddr_in * fake_shit = ( struct sockaddr_in * ) client_addr;
+//    fake_shit->sin_port = htons( client_addr_in->sin_port ); // TODO remove
+//    fake_shit->sin_family = AF_INET;
+//    inet_pton( AF_INET, "127.0.0.1", &fake_shit->sin_addr );
+    int stat = send_( sock, buffer, DATAGRAM_LEN, client_addr );
 
     return stat;
 }
