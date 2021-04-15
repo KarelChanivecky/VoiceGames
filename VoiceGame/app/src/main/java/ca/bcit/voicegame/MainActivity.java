@@ -17,6 +17,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import static ca.bcit.voicegame.TTTutils.SERVER_ADDRESS;
+import static ca.bcit.voicegame.TTTutils.UDP_PORT;
+import static ca.bcit.voicegame.TTTutils.UID;
+
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "AudioClient";
@@ -74,9 +78,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void startStreamingAudio() {
 
-        Log.i(TAG, "Starting the audio stream");
-        currentlySendingAudio = true;
-        startStreaming();
+        AudioChat ac = new AudioChat(0, UDP_PORT, SERVER_ADDRESS);
+        ac.startStreamingAudio();
+
+//        Log.i(TAG, "Starting the audio stream");
+//        currentlySendingAudio = true;
+//        startStreaming();
     }
 
     private void stopStreamingAudio() {

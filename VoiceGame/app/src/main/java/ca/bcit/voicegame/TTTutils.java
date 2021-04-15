@@ -1,7 +1,5 @@
 package ca.bcit.voicegame;
 
-import android.os.StrictMode;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-public class TTTutils {
+public class TTTutils{
 
     // Constants for PROTOCOL VERSIONS
     static final byte V1 = 1;
@@ -80,6 +78,7 @@ public class TTTutils {
     // Server Address and Port
     static final String SERVER_ADDRESS = "karelc.com";
     static final int TCP_PORT = 3000;
+    static final int UDP_PORT = 2034;
 
     //ByteBuffer Capacities
     static final int IN_CAP = 20;
@@ -298,4 +297,5 @@ public class TTTutils {
         input = null;
         output = null;
     }
+
 }

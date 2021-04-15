@@ -14,6 +14,7 @@ import static ca.bcit.voicegame.TTTutils.*;
 public class RpsActivity
         extends AppCompatActivity {
     private WebView webView;
+    private AudioChat ac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +50,18 @@ public class RpsActivity
 
         @JavascriptInterface
         public void createGame(){
-            team = connectToGame(V1, GAME_TTT);
-            if (team != 0) return;
-//            ac = new AudioChat(UID);
-//            ac.startStreamingAudio();
-            initializeGame(turn, status);
+            Thread init_thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    team = connectToGame(V1, GAME_RPS);
+                    if (team != 0) return;
+            ac = new AudioChat(UID, UDP_PORT, SERVER_ADDRESS);
+            ac.startStreamingAudio();
+                    initializeGame(turn, status);
+                }
+            });
+            init_thread.start();
+
         }
 
         @JavascriptInterface
@@ -68,36 +76,48 @@ public class RpsActivity
             final String pos = Integer.toString(response);
             if (GAME_STATE != RUNNING) handleGameEndChoice(pos);
             else {
-                if (response == -1) status = "Error in receiving opponent move.";
-                move =  opp_sym;
+                move =  getSymbol(pos);
                 status = "Make your move.";
                 turn = true;
+                if (response == -1) status = "Error in receiving opponent move.";
                 updateBoardAndStatus(move, pos, status);
             }
         }
 
+        @JavascriptInterface
         public void handleMyMove(final @NonNull String cell){
             if (!sendMove(Byte.parseByte(cell))) {
                 status = "Error sending move, please try again";
                 updateStatus(status);
                 return;
             }
-            move =  sym;
-            status = "You chose " + move;
-            opp_status = "Waiting for opponent's move";
+            move =  getSymbol(cell);
+            status = "You chose " + move + ", waiting for opponents move";
             turn = !turn;
             updateBoardAndStatus(move, cell, status);
-            handleOpponentMove();
+            Thread opp_thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    handleOpponentMove();
+                }
+            });
+            opp_thread.start();
 
+        }
+
+        public String getSymbol(String cell) {
+            if (cell.equals("1")) return "Rock";
+            else if (cell.equals("2")) return "Paper";
+            else return "Scissors";
         }
 
         @JavascriptInterface
         public void handleGameEndChoice(final String choice){
-            opp_status = choice;
+            opp_status = getSymbol(choice);
             String state = "game end state";
-            if (GAME_STATE == WIN) state = "Congratulations, You won!";
-            else if (GAME_STATE == LOSS) state = "Sorry, You lost the game :|";
-            else if (GAME_STATE == TIE) state = "Close match, You tied :)";
+            if (GAME_STATE == WIN) state = "You won, opponent choose " + opp_status;
+            else if (GAME_STATE == LOSS) state = "You lost, opponent choose " + opp_status;
+            else if (GAME_STATE == TIE) state = "You tied, opponent choose " + opp_status;
             else if (GAME_STATE == OPP_LEFT) state = "Your opponent left the game D:";
 
             updateBoardAndStatus(opp_sym, choice, state);
@@ -171,8 +191,13 @@ public class RpsActivity
                             webView.evaluateJavascript("updateStatus('" + stat + "')", new ValueCallback<String>() {
                                 @Override
                                 public void onReceiveValue(String value) {
-                                    GAME_STATE = RUNNING;
-                                    if (!isTurn) makeMove("-1");
+                                    Thread opp1_thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            GAME_STATE = RUNNING;
+                                        }
+                                    });
+                                    opp1_thread.start();
                                 }
                             });
                         }
@@ -188,8 +213,8 @@ public class RpsActivity
     {
         try {
             super.onStop();
-//            ac.stopStreamingAudio();
-            if (socket != null) socket.close();
+            ac.stopStreamingAudio();
+//            if (socket != null) socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

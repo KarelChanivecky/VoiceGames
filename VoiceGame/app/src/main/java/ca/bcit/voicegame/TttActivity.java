@@ -60,12 +60,18 @@ public class TttActivity
 
         @JavascriptInterface
         public void createGame(){
-            team = connectToGame(V1, GAME_TTT);
-            if (team == -1) return;
-            if (team == SYM_O) updateVariablesOnConnection();
+            Thread init_thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    team = connectToGame(V1, GAME_TTT);
+                    if (team == -1) return;
+                    if (team == SYM_O) updateVariablesOnConnection();
 //            ac = new AudioChat(UID);
 //            ac.startStreamingAudio();
-            initializeGame(turn, status);
+                    initializeGame(turn, status);
+                }
+            });
+            init_thread.start();
         }
 
         @JavascriptInterface
@@ -85,15 +91,16 @@ public class TttActivity
             final String pos = Integer.toString(response);
             if (GAME_STATE != RUNNING) handleGameEndChoice(pos);
             else {
-                if (response == -1) status = "Error in receiving opponent move.";
                 move =  opp_sym;
                 status = "Make your move.";
                 turn = true;
                 num_moves++;
+                if (response == -1) status = "Error in receiving opponent move.";
                 updateBoardAndStatus(move, pos, status);
             }
         }
 
+        @JavascriptInterface
         public void handleMyMove(final @NonNull String cell){
             if (!sendMove(Byte.parseByte(cell))) {
                 status = "Error sending move, please try again";
@@ -104,17 +111,14 @@ public class TttActivity
             status = "Wait for opponent's turn.";
             turn = !turn;
             num_moves++;
-            mtx = 0;
             updateBoardAndStatus(move, cell, status);
-            
-            while (mtx == 0){
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            Thread opp_thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    handleOpponentMove();
                 }
-            };
-            handleOpponentMove();
+            });
+            opp_thread.start();
         }
 
         @JavascriptInterface
@@ -153,20 +157,18 @@ public class TttActivity
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-                    webView.evaluateJavascript("updateBoard('" + val+ "', '" + id + "')", new ValueCallback<String>() {
+                    webView.evaluateJavascript("updateBoard('" + val + "', '" + id + "')", new ValueCallback<String>() {
                         @Override
                         public void onReceiveValue(String value) {
-                            webView.evaluateJavascript("updateStatus('" + stat+ "')", new ValueCallback<String>() {
-                                @Override
-                                public void onReceiveValue(String value) {
-                                    mtx = 1;
-                                    System.out.println("Done");
-                                }
-                            });
                             System.out.println("Done");
                         }
                     });
-
+                    webView.evaluateJavascript("updateStatus('" + stat + "')", new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String value) {
+                            System.out.println("Done");
+                        }
+                    });
                 }
             });
         }
@@ -198,8 +200,14 @@ public class TttActivity
                             webView.evaluateJavascript("updateStatus('" + stat + "')", new ValueCallback<String>() {
                                 @Override
                                 public void onReceiveValue(String value) {
-                                    GAME_STATE = RUNNING;
-                                    if (!isTurn) makeMove("-1");
+                                    Thread opp1_thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            GAME_STATE = RUNNING;
+                                            if (!isTurn) makeMove("-1");
+                                        }
+                                    });
+                                    opp1_thread.start();
                                 }
                             });
                         }
@@ -216,7 +224,7 @@ public class TttActivity
         try {
             super.onStop();
 //            ac.stopStreamingAudio();
-            if (socket != null) socket.close();
+//            if (socket != null) socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

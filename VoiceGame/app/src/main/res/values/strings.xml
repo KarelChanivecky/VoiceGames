@@ -19,7 +19,8 @@
                     &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt;&lt;br/&gt;
                     &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt; &lt;button&gt;&lt;/button&gt;&lt;br/&gt;
 
-                    &lt;button id=\"quit\" onclick=quit()&gt;quit game &lt;/button&gt;
+                    &lt;button id=\"playAgain\" onclick=quit(0)&gt;play again &lt;/button&gt;
+                    &lt;button id=\"quit\" onclick=quit(1)&gt;quit game &lt;/button&gt;
                 &lt;/div&gt;
             &lt;/body&gt;
             &lt;script&gt;
@@ -53,6 +54,12 @@
                     mainDiv.style.display = \"block\";
                     if(isTurn === \"true\")
                         turn = true;
+                    if(turn){
+                        document.getElementById(\"status\").innerHTML = \"Its your turn. You are X. \";
+                    }
+                    else{
+                        document.getElementById(\"status\").innerHTML = \"You are O. Opponents turn \";
+                    }
                 }
 
                 function pressed(id){
@@ -74,11 +81,11 @@
                     }
                 }
 
-                function quit(){
+                function quit(num){
                     let handled = false;
                     try{
                         if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                            Android[\"handleGameQuitChoice\"](1);
+                            Android[\"handleGameQuitChoice\"](num);
                             handled = true;
                         }
                     }
@@ -90,12 +97,23 @@
                     }
                 }
 
-            &lt;/script&gt;
-            &lt;script&gt;
                 function updateBoard(value, id){
                     if(id === \"-1\") return;
                     let val = document.getElementById(id).innerHTML;
                     if(val !== \" \") return;
+                    let btns = document.getElementsByTagName(\"button\");
+                    if(turn){
+                        document.getElementById(\"status\").innerHTML = \"Wait for opponents turn. \";
+                        for (i = 0; i &lt; 9; i++) {
+                            btns[i].disabled = true;
+                        }
+                    }
+                    else{
+                        document.getElementById(\"status\").innerHTML = \"Its your turn. \";
+                        for (i = 0; i &lt; 9; i++) {
+                            btns[i].disabled = false;
+                        }
+                    }
                     turn = !turn;
                     document.getElementById(id).innerHTML = value;
                 }
@@ -128,88 +146,96 @@
              &lt;/head&gt;
              &lt;body&gt;
                 &lt;p id=\"status\" style=\"font-size:40px;text-align:center\"&gt;wait for game to start&lt;/p&gt;
-                &lt;p id=\"oppVal\" style=\"font-size:40px;text-align:center\"&gt; &lt;/p&gt;
                 &lt;div id=\"mainDiv\" style=\"margin:35% auto;text-align: center\"&gt;
                     &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
                     &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
                     &lt;button&gt;&lt;/button&gt; &lt;br/&gt;
 
-                    &lt;button id=\"quit\" onclick=quit()&gt;quit game &lt;/button&gt;
+                    &lt;button id=\"playAgain\" onclick=quit(0)&gt;play again &lt;/button&gt;
+                    &lt;button id=\"quit\" onclick=quit(1)&gt;quit game &lt;/button&gt;
                 &lt;/div&gt;
-                &lt;script&gt;
-                    let turn = false;
-                    function updateStatus(status){
-                        document.getElementById(\"status\").innerHTML = status;
-                    }
+            &lt;/body&gt;
+            &lt;script&gt;
+                let turn = false;
+                function updateStatus(status){
+                    document.getElementById(\"status\").innerHTML = status;
+                }
 
-                    function createGame(){
-                        let mainDiv = document.getElementById(\"mainDiv\");
-                        mainDiv.style.display = \"none\";
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"createGame\"]();
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
+                function createGame(){
+                    let mainDiv = document.getElementById(\"mainDiv\");
+                    mainDiv.style.display = \"none\";
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"createGame\"]();
+                            handled = true;
                         }
                     }
-
-                    window.onload = createGame();
-
-                    function initializeGame(isTurn){
-                        let mainDiv = document.getElementById(\"mainDiv\");
-                        mainDiv.style.display = \"block\";
-                        if(isTurn === \"true\")
-                            turn = true;
+                    catch(error){
+                        throw error;
                     }
-
-                    function pressed(id){
-                        if(!turn) return;
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"makeMove\"](id);
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
-                        }
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
                     }
+                }
 
-                    function quit(){
-                        let handled = false;
-                        try{
-                            if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
-                                Android[\"handleGameQuitChoice\"](1);
-                                handled = true;
-                            }
-                        }
-                        catch(error){
-                            throw error;
-                        }
-                        if(!(handled)){
-                            throw \"Unable to handle \" + app.messageHandlerName;
+                window.onload = createGame();
+
+                function initializeGame(isTurn){
+                    let mainDiv = document.getElementById(\"mainDiv\");
+                    mainDiv.style.display = \"block\";
+                    if(isTurn === \"true\")
+                        turn = true;
+                    document.getElementById(\"status\").innerHTML = \"Make your move. \";
+                }
+
+                function pressed(id){
+                    if(!turn) return;
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"makeMove\"](id);
+                            handled = true;
                         }
                     }
-
-                &lt;/script&gt;
-                &lt;script&gt;
-                    function updateBoard(value, id){
-                        if(id === \"-1\") return;
-
+                    catch(error){
+                        throw error;
                     }
-                &lt;/script&gt;
-             &lt;/body&gt;
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
+                    }
+                }
+
+                function quit(num){
+                    let handled = false;
+                    try{
+                        if(typeof Android !== \"undefined\" &amp;&amp; Android !== null){
+                            Android[\"handleGameQuitChoice\"](num);
+                            handled = true;
+                        }
+                    }
+                    catch(error){
+                        throw error;
+                    }
+                    if(!(handled)){
+                        throw \"Unable to handle \" + app.messageHandlerName;
+                    }
+                }
+
+                function updateBoard(value, id){
+                    if(id === \"-1\") return;
+                let val = document.getElementById(id).innerHTML;
+                let btns = document.getElementsByTagName(\"button\");
+                if(turn){
+                    document.getElementById(\"status\").innerHTML = \"You chose \" + val + \". Wait for opponents turn. \";
+                    for (i = 0; i &lt; 3; i++) {
+                        btns[i].disabled = true;
+                    }
+                }
+                turn = !turn;
+                }
+            &lt;/script&gt;
+
              &lt;script&gt;
                 const names = [\"rock\", \"paper\", \"scissor\"];
                 let btns = document.getElementsByTagName(\"button\");
