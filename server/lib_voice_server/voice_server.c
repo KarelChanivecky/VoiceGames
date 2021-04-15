@@ -14,6 +14,7 @@
 bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
 
+    printf("uid :%d\n", uid);
     game_environment * game_env = game_collection.get(uid);
 
     game_collection.lock();
