@@ -37,4 +37,6 @@ void unlock_mx( pthread_mutex_t * mutex );
 
 int get_other( game_environment * env );
 
+void print_client_addr( const struct sockaddr_in * client_addr );
+
 #endif //THE_ACTUAL_FSN_UTILS_H

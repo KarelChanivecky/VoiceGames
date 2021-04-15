@@ -91,3 +91,12 @@ int get_other(game_environment * env) {
     }
     return env->game_sockets[0];
 }
+
+void print_client_addr( const struct sockaddr_in * client_addr ) {
+    char str[INET_ADDRSTRLEN + 1];
+    inet_ntop(AF_INET, &client_addr->sin_addr, str, INET_ADDRSTRLEN);
+    printf("%d\n", client_addr->sin_family);
+    printf("%d\n", ntohs(client_addr->sin_port));
+    printf("%s\n", str);
+}
+
