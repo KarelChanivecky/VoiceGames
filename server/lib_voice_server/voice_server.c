@@ -10,8 +10,10 @@
 #include "../games/fsm_symbols.h"
 #include "dc_utils/dc_threaded_queue.h"
 #include "../game_server.h"
+#include "../utils.h"
 
-bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
+
+bool set_client_addr( datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
 
     printf("listener uid :%d\n", uid);
@@ -91,11 +93,7 @@ void * talker( void * v_datagram_queue ) {
             continue;
         }
 
-        char str[INET_ADDRSTRLEN + 1];
-        inet_ntop(AF_INET, &client_addr->sin_addr, str, INET_ADDRSTRLEN);
-        printf("%d\n", client_addr->sin_family);
-        printf("%d\n", ntohs(client_addr->sin_port));
-        printf("%s\n", str);
+        print_client_addr( client_addr );
 
         send_voice(socket, datagram, (struct sockaddr*)client_addr);
 
@@ -104,6 +102,7 @@ void * talker( void * v_datagram_queue ) {
         game_collection.unlock();
     }
 }
+
 
 
 void initialize_voice_server() {

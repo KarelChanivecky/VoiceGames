@@ -18,9 +18,13 @@ _Noreturn void * accept_clients( void * params ) {
     puts("accepting clients");
     accept_clients_args *args = (accept_clients_args *) params;
     while(true){
-        int new_conn = dc_accept( args->server_fd, NULL, NULL);
+
+        struct sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
+        int new_conn = dc_accept( args->server_fd, ( struct sockaddr * ) &client_addr, &client_len);
         printf("received new client %d\n", new_conn);
         printf("new conn: %d\n", new_conn);
+        print_client_addr(&client_addr);
         if ( new_conn == -1 ) {
             perror( "COMM ERROR! @await connection. Problem with listening socket" );
         }
