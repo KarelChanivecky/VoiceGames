@@ -11,32 +11,31 @@
 #include "dc_utils/dc_threaded_queue.h"
 #include "../game_server.h"
 
-bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr , int s) {
+bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
 
     game_environment * game_env = game_collection.get(uid);
 
+    game_collection.lock();
+
     if (!game_env) {
+        game_collection.unlock();
         return false;
     }
 
-    printf("uid: %d", uid);
-    game_collection.lock();
 
     int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
             ? PLAYER_1_INDEX : PLAYER_2_INDEX;
     struct sockaddr_in * stored_addr = &game_env->voice_sockets[index];
 
     if ( stored_addr->sin_port != NO_PORT) {
-        game_collection.lock();
+        game_collection.unlock();
         return true;
     }
 
     memcpy( stored_addr, client_addr, sizeof (struct sockaddr_in));
 
     game_collection.unlock();
-
-    send_voice( s, datagram, ( struct sockaddr * ) stored_addr );
 
     return true;
 }
@@ -57,11 +56,9 @@ void * listener( void * v_datagram_queue ) {
             free(datagram);
             continue;
         }
-
-        set_client_addr(datagram, &client_addr, socket);
-//        if (set_client_addr(datagram, &client_addr)) {
-//            queue->add(queue, datagram);
-//        }
+        if (set_client_addr(datagram, &client_addr)) {
+            queue->add(queue, datagram);
+        }
 
     }
 }
@@ -104,6 +101,11 @@ void initialize_voice_server() {
     pthread_t talker_t;
 
     pthread_create(&listener_t, NULL, listener, queue);
-//    pthread_create(&talker_t, NULL , talker, queue);
+    pthread_create(&talker_t, NULL , talker, queue);
+
+    int status = pthread_join(listener_t, NULL);
+
+    perror("thread crashed");
+
     puts("Initialized UDP server");
 }
