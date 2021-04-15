@@ -83,6 +83,9 @@ bool asses_read_move_state( int client, game_environment * game_env, int status)
             game_collection.remove(client);
             return false;
         }
+        case INSUFFICIENT_DATA : {
+            return false;
+        }
         case INVALID_REQ: {
             return false;
         }
@@ -118,7 +121,6 @@ void serve_clients( fd_set * client_fd_set ) {
             continue;
         }
 
-        rea
         Request req;
         int stat = read_move( client, &req);
 
