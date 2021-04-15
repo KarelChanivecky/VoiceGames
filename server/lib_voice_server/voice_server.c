@@ -13,12 +13,14 @@
 
 bool set_client_addr(datagram_t * datagram, struct sockaddr_in * client_addr , int s) {
     int uid = (int) datagram->uid;
+
     game_environment * game_env = game_collection.get(uid);
 
     if (!game_env) {
         return false;
     }
 
+    printf("uid: %d", uid);
     game_collection.lock();
 
     int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
@@ -60,7 +62,7 @@ void * listener( void * v_datagram_queue ) {
 //        if (set_client_addr(datagram, &client_addr)) {
 //            queue->add(queue, datagram);
 //        }
-        puts("sent");
+
     }
 }
 
