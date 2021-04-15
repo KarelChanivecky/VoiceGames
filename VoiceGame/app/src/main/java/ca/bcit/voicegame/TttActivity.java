@@ -16,7 +16,7 @@ import static ca.bcit.voicegame.TTTutils.*;
 public class TttActivity
         extends AppCompatActivity {
     private WebView webView;
-//    private AudioChat ac;
+    private AudioChat ac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,9 +27,6 @@ public class TttActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ttt);
         refreshValues();
-        System.out.println("UID value number 1 in TTT is " + UID);
-        UID++;
-        System.out.println("UID value number 2 in TTT is " + UID);
 
         webView = (WebView) findViewById(R.id.webView);
 
@@ -66,8 +63,8 @@ public class TttActivity
                     team = connectToGame(V1, GAME_TTT);
                     if (team == -1) return;
                     if (team == SYM_O) updateVariablesOnConnection();
-//            ac = new AudioChat(UID);
-//            ac.startStreamingAudio();
+            ac = new AudioChat(UID, UDP_PORT, SERVER_ADDRESS);
+            ac.startStreamingAudio();
                     initializeGame(turn, status);
                 }
             });
@@ -223,7 +220,7 @@ public class TttActivity
     {
         try {
             super.onStop();
-//            ac.stopStreamingAudio();
+            ac.stopStreamingAudio();
 //            if (socket != null) socket.close();
         } catch (Exception e) {
             e.printStackTrace();

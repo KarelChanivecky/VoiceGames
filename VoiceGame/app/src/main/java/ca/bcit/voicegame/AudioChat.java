@@ -40,6 +40,7 @@ public class AudioChat {
 
     // the audio recorder
     private AudioRecord recorder;
+    private AudioTrack track;
 
     // the minimum buffer size needed for audio recording
     private static int BUFFER_SIZE = AudioRecord.getMinBufferSize(
@@ -69,6 +70,7 @@ public class AudioChat {
         currentlySendingAudio = false;
         speakers = false;
         if (recorder != null) recorder.release();
+        if (track != null) track.release();
     }
 
     private void startStreaming() {
@@ -139,7 +141,8 @@ public class AudioChat {
             @Override
             public void run() {
 
-                AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDING_RATE, CHANNEL_OUT_MONO,
+                Log.d(TAG, "Creating the AudioTrack");
+                track = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDING_RATE, CHANNEL_OUT_MONO,
                         AudioFormat.ENCODING_PCM_16BIT, BUF_SIZE, AudioTrack.MODE_STREAM);
                 track.play();
                 int trial = 1;
@@ -159,7 +162,7 @@ public class AudioChat {
                         buff.put(b_order, 0, 4);
                         if (buff.getInt(0) < order) continue;
 
-                        Log.i(TAG, "Packet received: " + packetIn.getLength() + ", trial: " + trial++);
+//                        Log.i(TAG, "Packet received: " + packetIn.getLength() + ", trial: " + trial++);
                         track.write(b_order, 8, 5000);
                     }
 
