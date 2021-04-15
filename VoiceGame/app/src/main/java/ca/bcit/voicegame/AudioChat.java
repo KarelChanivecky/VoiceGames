@@ -146,20 +146,20 @@ public class AudioChat {
                 int order = 0;
                 try {
                     while(speakers) {
-
                         final byte[]         bufIn;
                         final DatagramPacket packetIn;
 
                         bufIn    = new byte[5008];
                         packetIn = new DatagramPacket(bufIn, bufIn.length);
                         socket.receive(packetIn);
+                        System.out.println("received datagram");
 
                         byte[] b_order = packetIn.getData();
                         ByteBuffer buff = ByteBuffer.allocate(4);
                         buff.put(b_order, 0, 4);
                         if (buff.getInt(0) < order) continue;
 
-                        Log.i(TAG, "Packet received: " + packetIn.getLength() + ", trial: " + trial++);
+//                        Log.i(TAG, "Packet received: " + packetIn.getLength() + ", trial: " + trial++);
                         track.write(b_order, 8, 5000);
                     }
 

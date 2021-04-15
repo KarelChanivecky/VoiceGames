@@ -56,6 +56,7 @@ public class RpsActivity
                     team = connectToGame(V1, GAME_RPS);
                     if (team != 0) return;
             ac = new AudioChat(UID, UDP_PORT, SERVER_ADDRESS);
+                    System.out.println("uid " + UID);
             ac.startStreamingAudio();
                     initializeGame(turn, status);
                 }

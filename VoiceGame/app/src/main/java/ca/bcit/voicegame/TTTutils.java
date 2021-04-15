@@ -76,7 +76,8 @@ public class TTTutils{
     static final byte OPPONENT_DISCONNECTED = 4;
 
     // Server Address and Port
-    static final String SERVER_ADDRESS = "karelc.com";
+//    static final String SERVER_ADDRESS = "karelc.com";
+    static final String SERVER_ADDRESS = "192.168.1.90";
     static final int TCP_PORT = 3000;
     static final int UDP_PORT = 2034;
 
