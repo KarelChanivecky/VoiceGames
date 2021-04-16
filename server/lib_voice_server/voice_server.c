@@ -60,10 +60,41 @@ void * listener( void * v_datagram_queue ) {
             free(datagram);
             continue;
         }
-        if (set_client_addr(datagram, &client_addr)) {
-            queue->add(queue, datagram);
+        if (!set_client_addr(datagram, &client_addr)) {
+//            queue->add(queue, datagram);
+            continue;
         }
 
+        // =========================================
+
+        int uid = (int) datagram->uid;
+
+//        printf("talker uid :%d\n", uid);
+
+        game_environment * game_env = game_collection.get(uid);
+        game_collection.lock();
+
+        if (!game_env) {
+            game_collection.unlock();
+            continue;
+        }
+        int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
+                    ? PLAYER_2_INDEX : PLAYER_1_INDEX;
+
+        struct sockaddr_in * recipient_addr = &game_env->voice_sockets[index];
+
+        if (recipient_addr->sin_port == NO_PORT) {
+            game_collection.unlock();
+            continue;
+        }
+
+//        print_client_addr( client_addr );
+
+        send_voice(socket, datagram, (struct sockaddr*)recipient_addr);
+
+        free(datagram);
+
+        game_collection.unlock();
     }
 }
 
@@ -111,6 +142,6 @@ void initialize_voice_server() {
     pthread_t talker_t;
 
     pthread_create(&listener_t, NULL, listener, queue);
-    pthread_create(&talker_t, NULL , talker, queue);
+//    pthread_create(&talker_t, NULL , talker, queue);
 
 }
