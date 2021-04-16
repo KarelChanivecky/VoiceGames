@@ -16,7 +16,7 @@
 bool set_client_addr( datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
 
-    printf("listener uid :%d\n", uid);
+//    printf("listener uid :%d\n", uid);
     game_environment * game_env = game_collection.get(uid);
 
     game_collection.lock();
@@ -74,7 +74,7 @@ void * talker( void * v_datagram_queue ) {
         datagram_t * datagram = queue->take(queue);
         int uid = (int) datagram->uid;
 
-        printf("talker uid :%d\n", uid);
+//        printf("talker uid :%d\n", uid);
 
         game_environment * game_env = game_collection.get(uid);
         game_collection.lock();
@@ -93,7 +93,7 @@ void * talker( void * v_datagram_queue ) {
             continue;
         }
 
-        print_client_addr( client_addr );
+//        print_client_addr( client_addr );
 
         send_voice(socket, datagram, (struct sockaddr*)client_addr);
 
@@ -113,9 +113,4 @@ void initialize_voice_server() {
     pthread_create(&listener_t, NULL, listener, queue);
     pthread_create(&talker_t, NULL , talker, queue);
 
-    int status = pthread_join(listener_t, NULL);
-
-    perror("thread crashed");
-
-    puts("Initialized UDP server");
 }
