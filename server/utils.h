@@ -12,7 +12,8 @@
 #include "lib/game_environment.h"
 
 typedef struct {
-    int port;
+    int tcp_port;
+    int udp_port;
     int sin_family;
     int addr;
     int listen_sock;
@@ -29,7 +30,7 @@ void init_fd_set( fd_set * client_fd_set );
 
 int await_select( fd_set * client_fd_set );
 
-void get_socket( server_config * server_cfg );
+void get_tcp_socket( server_config * server_cfg );
 
 void lock_mx( pthread_mutex_t * mutex );
 

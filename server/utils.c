@@ -36,7 +36,7 @@ void unlock_mx( pthread_mutex_t * mutex ) {
     }
 }
 
-void get_socket( server_config * server_cfg ) {
+void get_tcp_socket( server_config * server_cfg ) {
     int listen_socket_fd;
     server_cfg->sin_family = AF_INET;
     server_cfg->addr = htonl(INADDR_ANY);
@@ -54,7 +54,7 @@ void get_socket( server_config * server_cfg ) {
 
     memset( &addr, 0, sizeof( struct sockaddr_in ));
     addr.sin_family = server_cfg->sin_family;
-    addr.sin_port = htons( server_cfg->port );
+    addr.sin_port = htons( server_cfg->tcp_port );
     addr.sin_addr.s_addr = htonl( server_cfg->addr );
     dc_bind( listen_socket_fd, ( struct sockaddr * ) &addr, sizeof( struct sockaddr_in ));
     dc_listen( listen_socket_fd, MAX_CONN );
