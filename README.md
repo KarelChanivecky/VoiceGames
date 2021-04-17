@@ -1,4 +1,4 @@
-# VOICE GAMES 
+# VoiceGames 
 
 A games server implementing a generic gaming protocol designed by BCIT Data Communications(DC) and Internetworking students(Winter 2021)
 
@@ -29,4 +29,3 @@ Additionally, it provides voice chat using UDP and a voice communication protoco
 Android interface to support any game based on the base protocol designed by the BCIT DC students. It provides an API for
 all kinds of turn based games. Additionally, it enables real-time audio communication among the players using a UDP
 protocol. 
-
