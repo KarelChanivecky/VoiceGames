@@ -7,14 +7,14 @@
 
 int main() {
     int sock = get_inbound_sock();
-    puts("port open");
+    puts("tcp_port open");
     while (123) {
 
         struct sockaddr_in client;
         socklen_t client_len = sizeof(client);
         datagram_t datagram;
         recv_voice( sock, &datagram, ( struct sockaddr * ) &client, &client_len);
-//        printf("client port: %d", client.sin_port);
+//        printf("client tcp_port: %d", client.sin_port);
 //        puts("received");
 
         char str[INET_ADDRSTRLEN + 1];

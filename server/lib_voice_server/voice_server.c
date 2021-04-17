@@ -12,6 +12,9 @@
 #include "../game_server.h"
 #include "../utils.h"
 
+typedef struct {
+    int port;
+} udp_args_t;
 
 bool set_client_addr( datagram_t * datagram, struct sockaddr_in * client_addr) {
     int uid = (int) datagram->uid;
@@ -22,7 +25,6 @@ bool set_client_addr( datagram_t * datagram, struct sockaddr_in * client_addr) {
     game_collection.lock();
 
     if (!game_env) {
-        puts("not found");
         game_collection.unlock();
         return false;
     }
@@ -44,11 +46,45 @@ bool set_client_addr( datagram_t * datagram, struct sockaddr_in * client_addr) {
     return true;
 }
 
+
+void send_datagram(int socket, datagram_t * datagram ) {
+    int uid = (int) datagram->uid;
+
+//    printf("talker uid :%d\n", uid);
+
+    game_environment * game_env = game_collection.get(uid);
+    game_collection.lock();
+
+    if (!game_env) {
+        game_collection.unlock();
+        return;
+    }
+    int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
+                ? PLAYER_2_INDEX : PLAYER_1_INDEX;
+
+    struct sockaddr_in * recipient_addr = &game_env->voice_sockets[index];
+
+    if (recipient_addr->sin_port == NO_PORT) {
+        game_collection.unlock();
+        return;
+    }
+
+//        print_client_addr( client_addr );
+
+    send_voice(socket, datagram, (struct sockaddr*)recipient_addr);
+
+    free(datagram);
+
+    game_collection.unlock();
+}
+
 void * listener( void * v_datagram_queue ) {
 
-    struct dc_threaded_queue * queue = (struct dc_threaded_queue *) v_datagram_queue;
+    udp_args_t * args = (udp_args_t *) v_datagram_queue;
 
-    int socket = get_inbound_sock();
+    int port = args->port;
+
+    int socket = get_udp_sock(port);
 
     while ( 1 ) {
         struct sockaddr_in client_addr;
@@ -61,87 +97,25 @@ void * listener( void * v_datagram_queue ) {
             continue;
         }
         if (!set_client_addr(datagram, &client_addr)) {
-//            queue->add(queue, datagram);
             continue;
         }
 
-        // =========================================
-
-        int uid = (int) datagram->uid;
-
-//        printf("talker uid :%d\n", uid);
-
-        game_environment * game_env = game_collection.get(uid);
-        game_collection.lock();
-
-        if (!game_env) {
-            game_collection.unlock();
-            continue;
-        }
-        int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
-                    ? PLAYER_2_INDEX : PLAYER_1_INDEX;
-
-        struct sockaddr_in * recipient_addr = &game_env->voice_sockets[index];
-
-        if (recipient_addr->sin_port == NO_PORT) {
-            game_collection.unlock();
-            continue;
-        }
-
-//        print_client_addr( client_addr );
-
-        send_voice(socket, datagram, (struct sockaddr*)recipient_addr);
-
-        free(datagram);
-
-        game_collection.unlock();
-    }
-}
-
-void * talker( void * v_datagram_queue ) {
-    struct dc_threaded_queue * queue = (struct dc_threaded_queue *) v_datagram_queue;
-    int socket = get_outbound_sock();
-    while ( 1 ) {
-        datagram_t * datagram = queue->take(queue);
-        int uid = (int) datagram->uid;
-
-//        printf("talker uid :%d\n", uid);
-
-        game_environment * game_env = game_collection.get(uid);
-        game_collection.lock();
-
-        if (!game_env) {
-            game_collection.unlock();
-            continue;
-        }
-        int index = game_env->game_sockets[PLAYER_1_INDEX] == uid
-                    ? PLAYER_2_INDEX : PLAYER_1_INDEX;
-
-        struct sockaddr_in * client_addr = &game_env->voice_sockets[index];
-
-        if (client_addr->sin_port == NO_PORT) {
-            game_collection.unlock();
-            continue;
-        }
-
-//        print_client_addr( client_addr );
-
-        send_voice(socket, datagram, (struct sockaddr*)client_addr);
-
-        free(datagram);
-
-        game_collection.unlock();
+        send_datagram(socket, datagram);
     }
 }
 
 
 
-void initialize_voice_server() {
-    struct dc_threaded_queue * queue = dc_threaded_queue_init(256);
-    pthread_t listener_t;
-    pthread_t talker_t;
+void initialize_voice_server(int udp_port_num) {
+    udp_args_t * args = (udp_args_t *) malloc( sizeof(udp_args_t));
+    if (!args) {
+        perror("Could not alloc");
+        exit(MALLOC_ERR);
+    }
 
-    pthread_create(&listener_t, NULL, listener, queue);
-//    pthread_create(&talker_t, NULL , talker, queue);
+    args->port = udp_port_num;
+    pthread_t udp;
+
+    pthread_create( &udp, NULL, listener, args);
 
 }

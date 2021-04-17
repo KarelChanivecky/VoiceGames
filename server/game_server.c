@@ -58,7 +58,7 @@ void initialize_new_client_plexer( extended_thread_list_t * handshaked_clients_l
 }
 
 
-void initialize_service_threads( int server_fd, int new_game_signal ) {
+void initialize_service_threads( int server_fd, int new_game_signal, int udp_port_num ) {
     extended_thread_list_t * new_client_list = get_extended_threaded_list();
     initialize_client_gateway( new_client_list, server_fd );
 
@@ -67,7 +67,7 @@ void initialize_service_threads( int server_fd, int new_game_signal ) {
 
     initialize_new_client_plexer( handshaked_clients, new_game_signal );
 
-    initialize_voice_server();
+    initialize_voice_server(udp_port_num);
 }
 
 bool asses_read_move_state( int client, game_environment * game_env, int status) {
@@ -157,7 +157,7 @@ void serve_clients( fd_set * client_fd_set ) {
 
 
 
-void server( int server_fd ) {
+void server( int server_fd, int udp_port_num ) {
     puts("INITIALIZING SERVER");
     game_collection.init(MAX_CONN);
 
@@ -167,7 +167,7 @@ void server( int server_fd ) {
         exit(ERR_PIPE);
     }
 
-    initialize_service_threads( server_fd, new_game_signal[1] );
+    initialize_service_threads( server_fd, new_game_signal[1], udp_port_num );
 
     puts("");
     fd_set client_fd_set;
@@ -197,25 +197,34 @@ void server( int server_fd ) {
 }
 
 
+int get_port_from_arg( char ** argv, int index ) {
+    int port_number = ( int ) strtol( argv[ index ], NULL, 10 );
+    if ( port_number < MIN_PORT || MAX_PORT < port_number ) {
+        fprintf( stderr,
+                 "Invalid tcp_port number entered! This application only accepts: %d < tcp_port < %d\n",
+                 MIN_PORT, MAX_PORT );
+        exit( EXIT_FAILURE );
+    }
+    return port_number;
+}
+
+// argv1 = tcp, arg2 = udp
 int main( int argc, char ** argv ) {
     server_config server_cfg;
-
+    int udp_port_num = NO_PORT;
     if ( argc != PORT_PARAM_GIVEN ) {
-        server_cfg.port = DEFAULT_PORT;
+        server_cfg.tcp_port = DEFAULT_TCP_PORT;
+        udp_port_num = DEFAULT_UDP_PORT;
     } else {
-        int port_number = ( int ) strtol( argv[ 1 ], NULL, 10 );
-        if ( port_number < MIN_PORT || MAX_PORT < port_number ) {
-            fprintf( stderr,
-                     "Invalid port number entered! This application only accepts: %d < port < %d\n",
-                     MIN_PORT, MAX_PORT );
-            exit( EXIT_FAILURE );
-        }
-        server_cfg.port = port_number;
+        server_cfg.tcp_port = get_port_from_arg( argv, 1 );
+        udp_port_num = get_port_from_arg( argv, 2 );
+        puts("custom ports");
     }
 
-    get_socket( &server_cfg );
+    printf("tcp: %d\nudp: %d\n", server_cfg.tcp_port, udp_port_num);
+    get_tcp_socket( &server_cfg );
 
-    server( server_cfg.listen_sock );
+    server( server_cfg.listen_sock, udp_port_num );
 
     return EXIT_SUCCESS;
 }

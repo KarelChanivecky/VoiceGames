@@ -49,7 +49,7 @@ int recv_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr, 
     uint32_t * buff_as_int32_ptr = ( uint32_t * ) buffer;
     datagram->order = ntohl( buff_as_int32_ptr[ ORDER_INT32_PTR_INDEX ] );
     datagram->uid = ntohl( buff_as_int32_ptr[ UID_INT32_PTR_INDEX ] );
-//    datagram->port = ntohs((( uint16_t * ) buffer )[ PORT_INT16_PTR_INDEX ] );
+//    datagram->tcp_port = ntohs((( uint16_t * ) buffer )[ PORT_INT16_PTR_INDEX ] );
     memcpy(( void * ) datagram->samples, &buffer[ SAMPLES_INT8_PTR_INDEX ], DATAGRAM_SAMPLE_C * 2 );
 
     return stat;
@@ -59,8 +59,8 @@ int send_voice( int sock, datagram_t * datagram, struct sockaddr * client_addr )
     uint8_t buffer[DATAGRAM_LEN] = { 0 };
     memcpy( buffer, &datagram->order, sizeof( uint32_t ));
     memset( &buffer[ UID_INT8_PTR_INDEX ], 0, sizeof( uint32_t ));
-//    datagram->port = htons( datagram->port );
-//    memcpy( &buffer[ PORT_INT8_PTR_INDEX ], &datagram->port, sizeof( uint32_t ));
+//    datagram->tcp_port = htons( datagram->tcp_port );
+//    memcpy( &buffer[ PORT_INT8_PTR_INDEX ], &datagram->tcp_port, sizeof( uint32_t ));
     memcpy( &buffer[ SAMPLES_INT8_PTR_INDEX ], &datagram->samples, DATAGRAM_SAMPLE_C * 2 );
 
 //    struct sockaddr_in * fake_shit = ( struct sockaddr_in * ) client_addr;

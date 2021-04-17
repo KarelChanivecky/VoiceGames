@@ -49,7 +49,7 @@ enum foo {
 typedef struct {
     uint32_t order;
     uint32_t uid;
-//    uint16_t port;
+//    uint16_t tcp_port;
     uint16_t samples[DATAGRAM_SAMPLE_C];
 } datagram_t;
 
@@ -62,5 +62,6 @@ int get_inbound_sock();
 
 int get_outbound_sock();
 
+int get_udp_sock( uint16_t port );
 
 #endif //TIC_TAC_TOE_VOICE_PROT_H
